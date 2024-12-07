@@ -3,6 +3,7 @@
   import { createQuery } from '@tanstack/svelte-query';
 
   import GranularitySlider from '../components/GranularitySlider/GranularitySlider.svelte';
+  import Graph from '../components/Graph/Graph.svelte';
 
   type PopulationDataEntryRaw = {
     'ID Nation': string;
@@ -85,6 +86,11 @@
     {/if}
     {#if $populationQuery.isSuccess}
       <pre class="pre-wrapped">{JSON.stringify(populationDataFiltered, null, 4)}</pre>
+
+      <figure class="w-full">
+        <Graph values={[]} />
+        <figcaption>Graph</figcaption>
+      </figure>
     {/if}
   </div>
 </article>
