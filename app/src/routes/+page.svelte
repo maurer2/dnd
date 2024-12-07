@@ -4,6 +4,20 @@
 
   import GranularitySlider from '../components/GranularitySlider/GranularitySlider.svelte';
 
+  type PopulationDataEntryRaw = {
+    'ID Nation': string;
+    Nation: string;
+    'ID Year': number;
+    Year: string;
+    Population: number;
+    'Slug Nation': string;
+  };
+
+  type PopulationDataEntry = {
+    idYear: PopulationDataEntryRaw['ID Year'];
+    population: PopulationDataEntryRaw['Population'];
+  };
+
   // todo: migrate to runes once supported in tanstack query: https://github.com/TanStack/query/discussions/7413
   const populationQuery = createQuery({
     queryKey: ['nation-population'],
@@ -16,7 +30,13 @@
         'data' in response &&
         Array.isArray(response.data)
       ) {
-        return response.data as Record<string, string | number>[];
+        const dataRaw = response.data as PopulationDataEntryRaw[];
+        const dataPretty: PopulationDataEntry[] = dataRaw.map((entry) => ({
+          idYear: entry['ID Year'],
+          population: entry.Population,
+        }));
+
+        return dataPretty;
       }
       return [];
     },
@@ -24,12 +44,26 @@
       await fetchData('https://datausa.io/api/data?drilldowns=Nation&measures=Population'),
   });
   let granularity = $state(3);
-  let populationEntries = $derived.by(() => {
-    if ($populationQuery.data) {
-      // todo filter stuff
-      return $populationQuery.data;
+  let populationDataFiltered = $derived.by(() => {
+    if (!$populationQuery.data?.length) {
+      return [];
     }
-    return [];
+
+    const filteredList = $populationQuery.data.reduce(
+      (total, current) => {
+        const lastSavedYear = total.at(-1)?.idYear ?? current.idYear;
+        const nextYear = lastSavedYear - granularity;
+
+        if (current.idYear === nextYear) {
+          total.push(current);
+        }
+
+        return total;
+      },
+      [$populationQuery.data[0]],
+    );
+
+    return filteredList.toReversed();
   });
 </script>
 
@@ -42,13 +76,15 @@
 
   <hr />
 
-  {#if $populationQuery.isLoading}
-    <p>Querying data</p>
-  {/if}
-  {#if $populationQuery.isError}
-    <p>Error: {$populationQuery.error.message}</p>
-  {/if}
-  {#if $populationQuery.isSuccess}
-    <pre class="pre-wrapped">{JSON.stringify(populationEntries, null, 4)}</pre>
-  {/if}
+  <div>
+    {#if $populationQuery.isLoading}
+      <p>Querying data</p>
+    {/if}
+    {#if $populationQuery.isError}
+      <p>Data can't be loaded: {$populationQuery.error.message}</p>
+    {/if}
+    {#if $populationQuery.isSuccess}
+      <pre class="pre-wrapped">{JSON.stringify(populationDataFiltered, null, 4)}</pre>
+    {/if}
+  </div>
 </article>
