@@ -12,6 +12,7 @@
     <h1>Title</h1>
     <p>Text</p>
   </header>
+  <hr />
   <main class="container m-auto">
     {@render children()}
   </main>
