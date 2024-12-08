@@ -16,6 +16,7 @@
 
   type PopulationDataEntry = {
     idYear: PopulationDataEntryRaw['ID Year'];
+    year: PopulationDataEntryRaw['Year'];
     population: PopulationDataEntryRaw['Population'];
   };
 
@@ -34,6 +35,7 @@
         const dataRaw = response.data as PopulationDataEntryRaw[];
         const dataPretty: PopulationDataEntry[] = dataRaw.map((entry) => ({
           idYear: entry['ID Year'],
+          year: entry.Year,
           population: entry.Population,
         }));
 
@@ -44,6 +46,7 @@
     queryFn: async () =>
       await fetchData('https://datausa.io/api/data?drilldowns=Nation&measures=Population'),
   });
+
   let granularity = $state(3);
   let populationDataFiltered = $derived.by(() => {
     if (!$populationQuery.data?.length) {
@@ -66,6 +69,37 @@
 
     return filteredList.toReversed();
   });
+  let minAbsolutePopulation = $derived.by(() => {
+    if (!$populationQuery.data?.length) {
+      return 0;
+    }
+
+    return Math.min(...$populationQuery.data.map(({ population }) => population));
+  });
+
+  let maxAbsolutePopulation = $derived.by(() => {
+    if (!$populationQuery.data?.length) {
+      return 0;
+    }
+
+    return Math.max(...$populationQuery.data.map(({ population }) => population));
+  });
+
+  let firstYearAbsolute = $derived.by(() => {
+    if (!$populationQuery.data?.length) {
+      return 0;
+    }
+
+    return $populationQuery.data[0].idYear;
+  });
+
+  let lastYearAbsolute = $derived.by(() => {
+    if (!$populationQuery.data?.length) {
+      return 0;
+    }
+
+    return $populationQuery.data.at(-1)?.idYear ?? 0;
+  });
 </script>
 
 <article>
@@ -85,12 +119,18 @@
       <p>Data can't be loaded: {$populationQuery.error.message}</p>
     {/if}
     {#if $populationQuery.isSuccess}
-      <pre class="pre-wrapped">{JSON.stringify(populationDataFiltered, null, 4)}</pre>
-
       <figure class="w-full">
-        <Graph values={[]} />
+        <Graph
+          values={populationDataFiltered}
+          {minAbsolutePopulation}
+          {maxAbsolutePopulation}
+          {firstYearAbsolute}
+          {lastYearAbsolute}
+        />
         <figcaption>Graph</figcaption>
       </figure>
+
+      <pre class="pre-wrapped">{JSON.stringify(populationDataFiltered, null, 4)}</pre>
     {/if}
   </div>
 </article>
