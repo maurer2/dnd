@@ -1,25 +1,54 @@
 <script lang="ts">
-  type GraphProps = {
-    values: Array<{
-      idYear: number;
-      population: number;
-      year: string;
-    }>;
-    minAbsolutePopulation: number;
-    maxAbsolutePopulation: number;
-    firstYearAbsolute: number;
-    lastYearAbsolute: number;
+  type PopulationDataEntry = {
+    idYear: number;
+    year: string;
+    population: number;
   };
 
-  let {
-    values,
-    minAbsolutePopulation,
-    maxAbsolutePopulation,
-    firstYearAbsolute,
-    lastYearAbsolute,
-  }: GraphProps = $props();
+  type GraphProps = {
+    granularity: number;
+    entries: PopulationDataEntry[];
+  };
 
   let formatterWithShortUnits = Intl.NumberFormat('en-GB', { notation: 'compact' });
+
+  let { granularity, entries }: GraphProps = $props();
+
+  let populationDataFiltered = $derived.by(() => {
+    const filteredList = entries.reduce(
+      (total, current) => {
+        const lastSavedYear = total.at(-1)?.idYear ?? current.idYear;
+        const nextYear = lastSavedYear - granularity;
+
+        if (current.idYear === nextYear) {
+          total.push(current);
+        }
+
+        return total;
+      },
+      [entries[0]],
+    );
+
+    const filteredListWithOldestEntriesLast = [...filteredList];
+    const oldestEntry = entries.at(-1);
+
+    if (typeof oldestEntry !== 'undefined') {
+      filteredListWithOldestEntriesLast.push(oldestEntry);
+    }
+
+    return [...new Set(filteredListWithOldestEntriesLast)];
+  });
+
+  let minAbsolutePopulation = $derived.by(() => {
+    return Math.min(...entries.map(({ population }) => population));
+  });
+
+  let maxAbsolutePopulation = $derived.by(() => {
+    return Math.max(...entries.map(({ population }) => population));
+  });
+
+  let firstYearAbsolute = $derived(entries[0]?.idYear ?? 0);
+  let lastYearAbsolute = $derived(entries.at(-1)?.idYear ?? 0);
 
   const xAxisMapping = {
     '2013': 0,
@@ -35,7 +64,7 @@
   };
 
   const coordinatesRelative = $derived.by(() => {
-    const valuesRelative = values.map(({ year, population }) => {
+    const valuesRelative = populationDataFiltered.map(({ year, population }) => {
       const x = year in xAxisMapping ? xAxisMapping[year as keyof typeof xAxisMapping] : 0;
       // taken from https://www.mrexcel.com/board/threads/calculate-percentage-when-base-isnt-zero.630157/
       // prettier-ignore
@@ -77,14 +106,16 @@
           <polyline points={coordinatesRelativeAsString} fill="none" stroke="blue" />
           {#each coordinatesRelative as coordinateRelative}
             <circle cx={coordinateRelative.x} cy={coordinateRelative.y} r="1" fill="black" />
-            <text
-              x={coordinateRelative.x + 5}
-              y={coordinateRelative.y}
-              stroke="none"
-              font-size="0.25rem"
-              dominant-baseline="middle"
-              text-anchor="start">{coordinateRelative.populationFormatted}</text
-            >
+            {#if coordinateRelative.y < 0}
+              <text
+                x={coordinateRelative.x + 5}
+                y={coordinateRelative.y}
+                stroke="none"
+                font-size="0.25rem"
+                dominant-baseline="middle"
+                text-anchor="start">{coordinateRelative.populationFormatted}</text
+              >
+            {/if}
           {/each}
         </svg>
       </g>

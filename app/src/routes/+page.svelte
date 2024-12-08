@@ -48,73 +48,12 @@
   });
 
   let granularity = $state(3);
-  let populationDataFiltered = $derived.by(() => {
-    if (!$populationQuery.data?.length) {
-      return [];
-    }
-
-    const filteredList = $populationQuery.data.reduce(
-      (total, current) => {
-        const lastSavedYear = total.at(-1)?.idYear ?? current.idYear;
-        const nextYear = lastSavedYear - granularity;
-
-        if (current.idYear === nextYear) {
-          total.push(current);
-        }
-
-        return total;
-      },
-      [$populationQuery.data[0]],
-    );
-
-    const filteredListWithOldestEntriesLast = [...filteredList];
-    const oldestEntry = $populationQuery.data.at(-1);
-
-    if (typeof oldestEntry !== 'undefined') {
-      filteredListWithOldestEntriesLast.push(oldestEntry);
-    }
-
-    return [...new Set(filteredListWithOldestEntriesLast)];
-  });
-  let minAbsolutePopulation = $derived.by(() => {
-    if (!$populationQuery.data?.length) {
-      return 0;
-    }
-
-    return Math.min(...$populationQuery.data.map(({ population }) => population));
-  });
-
-  let maxAbsolutePopulation = $derived.by(() => {
-    if (!$populationQuery.data?.length) {
-      return 0;
-    }
-
-    return Math.max(...$populationQuery.data.map(({ population }) => population));
-  });
-
-  let firstYearAbsolute = $derived.by(() => {
-    if (!$populationQuery.data?.length) {
-      return 0;
-    }
-
-    return $populationQuery.data[0].idYear;
-  });
-
-  let lastYearAbsolute = $derived.by(() => {
-    if (!$populationQuery.data?.length) {
-      return 0;
-    }
-
-    return $populationQuery.data.at(-1)?.idYear ?? 0;
-  });
 </script>
 
 <article>
   <h2>PopulationQuery</h2>
 
-  <div>
-    <GranularitySlider bind:granularity />
-  </div>
+  <GranularitySlider bind:granularity />
 
   <hr />
 
@@ -126,15 +65,7 @@
       <p>Data can't be loaded: {$populationQuery.error.message}</p>
     {/if}
     {#if $populationQuery.isSuccess}
-      <Graph
-        values={populationDataFiltered}
-        {minAbsolutePopulation}
-        {maxAbsolutePopulation}
-        {firstYearAbsolute}
-        {lastYearAbsolute}
-      />
-
-      <pre class="pre-wrapped">{JSON.stringify(populationDataFiltered, null, 4)}</pre>
+      <Graph entries={$populationQuery.data} {granularity} />
     {/if}
   </div>
 </article>
