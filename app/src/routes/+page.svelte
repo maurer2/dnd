@@ -67,7 +67,14 @@
       [$populationQuery.data[0]],
     );
 
-    return filteredList.toReversed();
+    const filteredListWithOldestEntriesLast = [...filteredList];
+    const oldestEntry = $populationQuery.data.at(-1);
+
+    if (typeof oldestEntry !== 'undefined') {
+      filteredListWithOldestEntriesLast.push(oldestEntry);
+    }
+
+    return [...new Set(filteredListWithOldestEntriesLast)];
   });
   let minAbsolutePopulation = $derived.by(() => {
     if (!$populationQuery.data?.length) {
@@ -119,16 +126,13 @@
       <p>Data can't be loaded: {$populationQuery.error.message}</p>
     {/if}
     {#if $populationQuery.isSuccess}
-      <figure class="w-full">
-        <Graph
-          values={populationDataFiltered}
-          {minAbsolutePopulation}
-          {maxAbsolutePopulation}
-          {firstYearAbsolute}
-          {lastYearAbsolute}
-        />
-        <figcaption>Graph</figcaption>
-      </figure>
+      <Graph
+        values={populationDataFiltered}
+        {minAbsolutePopulation}
+        {maxAbsolutePopulation}
+        {firstYearAbsolute}
+        {lastYearAbsolute}
+      />
 
       <pre class="pre-wrapped">{JSON.stringify(populationDataFiltered, null, 4)}</pre>
     {/if}
