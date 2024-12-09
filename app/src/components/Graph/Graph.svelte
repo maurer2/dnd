@@ -1,16 +1,15 @@
 <script lang="ts">
-  type PopulationDataEntry = {
-    idYear: number;
-    year: string;
-    population: number;
-  };
-
   type GraphProps = {
     granularity: number;
-    entries: PopulationDataEntry[];
+    entries: Array<{
+      idYear: number;
+      year: string;
+      population: number;
+    }>;
   };
 
-  let formatterWithShortUnits = Intl.NumberFormat('en-GB', { notation: 'compact' });
+  // 1_000 -> 1K, 1_000_000 -> 1M etc.
+  let numberFormatterCompactNumbers = Intl.NumberFormat('en-GB', { notation: 'compact' });
 
   let { granularity, entries }: GraphProps = $props();
 
@@ -29,39 +28,36 @@
       [entries[0]],
     );
 
-    const filteredListWithOldestEntriesLast = [...filteredList];
     const oldestEntry = entries.at(-1);
 
-    if (typeof oldestEntry !== 'undefined') {
-      filteredListWithOldestEntriesLast.push(oldestEntry);
+    // make sure the oldest entry/start entry is present to always have at least two entries for the graph
+    if (oldestEntry !== undefined && filteredList.at(-1)?.idYear !== oldestEntry?.idYear) {
+      return [...filteredList, oldestEntry];
     }
 
-    return [...new Set(filteredListWithOldestEntriesLast)];
+    return filteredList;
   });
 
-  let minAbsolutePopulation = $derived.by(() => {
+  let minPopulationAbsolute = $derived.by(() => {
     return Math.min(...entries.map(({ population }) => population));
   });
-
-  let maxAbsolutePopulation = $derived.by(() => {
+  let maxPopulationAbsolute = $derived.by(() => {
     return Math.max(...entries.map(({ population }) => population));
   });
-
   let firstYearAbsolute = $derived(entries[0]?.idYear ?? 0);
   let lastYearAbsolute = $derived(entries.at(-1)?.idYear ?? 0);
+
   let xAxisYearsAbsolute = $derived.by(() => {
-    const stepSize = 100 / Math.abs(firstYearAbsolute - lastYearAbsolute);
-    const keyValueList = Array.from(
-      { length: Math.abs(firstYearAbsolute - lastYearAbsolute) + 1 },
-      (_, index) => {
-        const key = lastYearAbsolute + index;
-        const value = stepSize * index;
+    const steps = Math.abs(firstYearAbsolute - lastYearAbsolute);
+    const stepSize = 100 / steps;
+    const yearWithStepSizeList = Array.from({ length: steps + 1 }, (_, index) => {
+      const year = lastYearAbsolute + index;
+      const step = stepSize * index;
 
-        return { [key]: value };
-      },
-    );
+      return { [year]: step };
+    });
 
-    return Object.assign({}, ...keyValueList);
+    return Object.assign({}, ...yearWithStepSizeList);
   });
 
   const coordinatesRelative = $derived.by(() => {
@@ -72,8 +68,8 @@
           : 0;
       // taken from https://www.mrexcel.com/board/threads/calculate-percentage-when-base-isnt-zero.630157/
       // prettier-ignore
-      const y = ((population - minAbsolutePopulation) / (maxAbsolutePopulation - minAbsolutePopulation)) * -100;
-      const populationFormatted = formatterWithShortUnits.format(population);
+      const y = ((population - minPopulationAbsolute) / (maxPopulationAbsolute - minPopulationAbsolute)) * -100;
+      const populationFormatted = numberFormatterCompactNumbers.format(population);
 
       return { x, y, populationFormatted };
     });
@@ -89,6 +85,9 @@
 <div>
   <h2>Diagram</h2>
   <figure>
+    <figcaption>
+      Graph of US population between {firstYearAbsolute} and {lastYearAbsolute}
+    </figcaption>
     <div class="max-w-sm my-8">
       <svg viewBox="0 0 300 300" class="overflow-visible ml-12">
         <line x1="0" x2="100%" y1="100%" y2="100%" fill="none" stroke="black" />
@@ -108,10 +107,10 @@
         />
         <g transform="translate(-10,0)">
           <text y="0" font-size="0.85rem" text-anchor="end" dominant-baseline="text-before-edge"
-            >{formatterWithShortUnits.format(maxAbsolutePopulation)}</text
+            >{numberFormatterCompactNumbers.format(maxPopulationAbsolute)}</text
           >
           <text y="100%" font-size="0.85rem" text-anchor="end" dominant-baseline="middle"
-            >{formatterWithShortUnits.format(minAbsolutePopulation)}</text
+            >{numberFormatterCompactNumbers.format(minPopulationAbsolute)}</text
           >
         </g>
 
@@ -120,6 +119,7 @@
             <polyline points={coordinatesRelativeAsString} fill="none" stroke="blue" />
             {#each coordinatesRelative as coordinateRelative}
               <circle cx={coordinateRelative.x} cy={coordinateRelative.y} r="1" fill="black" />
+              <!-- Don't show text label, when text label would be rendered on top of the x-axis -->
               {#if coordinateRelative.y < 0}
                 <text
                   x={coordinateRelative.x + 5}
@@ -135,8 +135,5 @@
         </g>
       </svg>
     </div>
-    <figcaption>
-      Graph of US population between {firstYearAbsolute} and {lastYearAbsolute}
-    </figcaption>
   </figure>
 </div>
