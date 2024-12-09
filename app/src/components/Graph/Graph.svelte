@@ -82,58 +82,48 @@
 </script>
 
 <!-- adapted from https://svelte.dev/playground/e4c7b25da03b40b7a1cbe2b75840a185?version=5.8.1 -->
-<div>
-  <h2>Diagram</h2>
-  <figure>
-    <figcaption>
-      Graph of US population between {firstYearAbsolute} and {lastYearAbsolute}
-    </figcaption>
-    <div class="max-w-sm my-8">
-      <svg viewBox="0 0 300 300" class="overflow-visible ml-12">
-        <line x1="0" x2="100%" y1="100%" y2="100%" fill="none" stroke="black" />
-        <g transform="translate(0,320)">
-          <text x="0" font-size="0.85rem" text-anchor="start">{lastYearAbsolute}</text>
-          <text x="100%" font-size="0.85rem" text-anchor="end">{firstYearAbsolute}</text>
-        </g>
+<h2 class="text-lg mb-4">Diagram</h2>
+<figure class="max-w-sm">
+  <div class="mb-8">
+    <svg viewBox="0 0 300 300" class="overflow-visible ml-12">
+      <line x1="0" x2="100%" y1="100%" y2="100%" fill="none" stroke="black" />
+      <g transform="translate(0,320)">
+        <text x="0" font-size="0.85rem" text-anchor="start">{lastYearAbsolute}</text>
+        <text x="100%" font-size="0.85rem" text-anchor="end">{firstYearAbsolute}</text>
+      </g>
 
-        <line
-          x1="0"
-          x2="0"
-          y1="0"
-          y2="100%"
-          fill="none"
-          stroke="black"
-          dominant-baseline="middle"
-        />
-        <g transform="translate(-10,0)">
-          <text y="0" font-size="0.85rem" text-anchor="end" dominant-baseline="text-before-edge"
-            >{numberFormatterCompactNumbers.format(maxPopulationAbsolute)}</text
-          >
-          <text y="100%" font-size="0.85rem" text-anchor="end" dominant-baseline="middle"
-            >{numberFormatterCompactNumbers.format(minPopulationAbsolute)}</text
-          >
-        </g>
+      <line x1="0" x2="0" y1="0" y2="100%" fill="none" stroke="black" dominant-baseline="middle" />
+      <g transform="translate(-10,0)">
+        <text y="0" font-size="0.85rem" text-anchor="end" dominant-baseline="text-before-edge"
+          >{numberFormatterCompactNumbers.format(maxPopulationAbsolute)}</text
+        >
+        <text y="100%" font-size="0.85rem" text-anchor="end" dominant-baseline="middle"
+          >{numberFormatterCompactNumbers.format(minPopulationAbsolute)}</text
+        >
+      </g>
 
-        <g transform="translate(0,300)">
-          <svg width="100%" height="100%" viewBox="0 0 100 100" class="overflow-visible">
-            <polyline points={coordinatesRelativeAsString} fill="none" stroke="blue" />
-            {#each coordinatesRelative as coordinateRelative}
-              <circle cx={coordinateRelative.x} cy={coordinateRelative.y} r="1" fill="black" />
-              <!-- Don't show text label, when text label would be rendered on top of the x-axis -->
-              {#if coordinateRelative.y < 0}
-                <text
-                  x={coordinateRelative.x + 5}
-                  y={coordinateRelative.y}
-                  stroke="none"
-                  font-size="0.25rem"
-                  dominant-baseline="middle"
-                  text-anchor="start">{coordinateRelative.populationFormatted}</text
-                >
-              {/if}
-            {/each}
-          </svg>
-        </g>
-      </svg>
-    </div>
-  </figure>
-</div>
+      <g transform="translate(0,300)">
+        <svg width="100%" height="100%" viewBox="0 0 100 100" class="overflow-visible">
+          <polyline points={coordinatesRelativeAsString} fill="none" stroke="blue" />
+          {#each coordinatesRelative as coordinateRelative}
+            <circle cx={coordinateRelative.x} cy={coordinateRelative.y} r="1" fill="black" />
+            <!-- Don't show text label, when text label would be rendered on top of the x-axis -->
+            {#if coordinateRelative.y < 0}
+              <text
+                x={coordinateRelative.x + 5}
+                y={coordinateRelative.y}
+                stroke="none"
+                font-size="0.25rem"
+                dominant-baseline="middle"
+                text-anchor="start">{coordinateRelative.populationFormatted}</text
+              >
+            {/if}
+          {/each}
+        </svg>
+      </g>
+    </svg>
+  </div>
+  <figcaption class="text-center">
+    Graph of US population between {firstYearAbsolute} and {lastYearAbsolute}
+  </figcaption>
+</figure>

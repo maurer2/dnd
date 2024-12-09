@@ -48,21 +48,28 @@
 </script>
 
 <article>
-  <h2>PopulationQuery</h2>
-
-  <GranularitySlider bind:granularity />
-
-  <hr />
-
-  <div>
-    {#if $populationQuery.isLoading}
-      <p>Querying data</p>
-    {/if}
-    {#if $populationQuery.isError}
-      <p>Data can't be loaded: {$populationQuery.error.message}</p>
-    {/if}
-    {#if $populationQuery.isSuccess}
-      <Graph entries={$populationQuery.data} {granularity} />
-    {/if}
+  <div class="bg-blue-50 p-4 border-b border-blue-100">
+    <div class="container mx-auto">
+      <h2 id="filter-section-title" class="text-lg">Filters</h2>
+      <ul aria-describedby="filter-section-title" class="sm:grid sm:grid-cols-2 sn:gap-4">
+        <li class="flex gap-4">
+          <GranularitySlider bind:granularity />
+        </li>
+      </ul>
+    </div>
   </div>
+
+  <section class="p-4">
+    <div class="container mx-auto">
+      {#if $populationQuery.isLoading}
+        <p>Querying data</p>
+      {/if}
+      {#if $populationQuery.isError}
+        <p>Data can't be loaded: {$populationQuery.error.message}</p>
+      {/if}
+      {#if $populationQuery.isSuccess}
+        <Graph entries={$populationQuery.data} {granularity} />
+      {/if}
+    </div>
+  </section>
 </article>

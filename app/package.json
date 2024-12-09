@@ -14,10 +14,10 @@
     "test:unit": "vitest"
   },
   "devDependencies": {
-    "@rollup/rollup-darwin-x64": "^4.28.0",
-    "@rollup/rollup-darwin-arm64": "^4.28.0",
-    "@rollup/rollup-linux-x64-gnu": "^4.28.0",
     "@eslint/compat": "^1.2.3",
+    "@rollup/rollup-darwin-arm64": "^4.28.0",
+    "@rollup/rollup-darwin-x64": "^4.28.0",
+    "@rollup/rollup-linux-x64-gnu": "^4.28.0",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.9.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
@@ -28,6 +28,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-svelte": "^2.36.0",
     "globals": "^15.0.0",
+    "lucide-svelte": "^0.468.0",
     "prettier": "^3.3.2",
     "prettier-plugin-svelte": "^3.2.6",
     "prettier-plugin-tailwindcss": "^0.6.5",
@@ -42,13 +43,13 @@
   },
   "pnpm": {
     "supportedArchitectures": {
-      "os": [
-        "linux",
-        "darwin"
-      ],
       "cpu": [
         "x64",
         "arm64"
+      ],
+      "os": [
+        "linux",
+        "darwin"
       ]
     }
   }
