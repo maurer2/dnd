@@ -1,6 +1,7 @@
 <script lang="ts">
   import fetchData from '$lib/fetch-data';
   import { createQuery } from '@tanstack/svelte-query';
+  import type { ComponentProps } from 'svelte';
 
   import GranularitySlider from '../components/GranularitySlider/GranularitySlider.svelte';
   import Graph from '../components/Graph/Graph.svelte';
@@ -13,18 +14,14 @@
     Population: number;
     'Slug Nation': string;
   };
-
-  type PopulationDataEntry = {
-    idYear: PopulationDataEntryRaw['ID Year'];
-    year: PopulationDataEntryRaw['Year'];
-    population: PopulationDataEntryRaw['Population'];
-  };
+  type GraphProps = ComponentProps<typeof Graph>;
+  type PopulationDataEntry = GraphProps['entries'][number];
 
   // todo: migrate to runes once supported in tanstack query: https://github.com/TanStack/query/discussions/7413
   const populationQuery = createQuery({
     queryKey: ['nation-population'],
     select: (response) => {
-      // workaround until zod schemas and validation is set up
+      // todo: use zod instead
       if (
         response !== null &&
         typeof response == 'object' &&
@@ -33,11 +30,11 @@
         Array.isArray(response.data)
       ) {
         const dataRaw = response.data as PopulationDataEntryRaw[];
-        const dataPretty: PopulationDataEntry[] = dataRaw.map((entry) => ({
+        const dataPretty = dataRaw.map((entry) => ({
           idYear: entry['ID Year'],
           year: entry.Year,
           population: entry.Population,
-        }));
+        })) satisfies PopulationDataEntry[];
 
         return dataPretty;
       }
