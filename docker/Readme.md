@@ -8,3 +8,7 @@
 ## Basic auth
 
 Password: 123456
+
+## Docker
+
+Build and start container `docker-compose up`
