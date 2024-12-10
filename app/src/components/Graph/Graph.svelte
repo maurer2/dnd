@@ -60,7 +60,7 @@
     return Object.assign({}, ...yearWithStepSizeList);
   });
 
-  const coordinatesRelative = $derived.by(() => {
+  let coordinatesRelative = $derived.by(() => {
     const valuesRelative = populationDataFiltered.map(({ year, population }) => {
       const x =
         year in xAxisYearsAbsolute
@@ -76,16 +76,40 @@
 
     return valuesRelative;
   });
-  const coordinatesRelativeAsString = $derived(
+  let coordinatesRelativeAsString = $derived(
     coordinatesRelative.map(({ x, y }) => `${x},${y}`).join(' '),
   );
+
+  let listOfCurrentlyShownYears = $derived.by(() => populationDataFiltered.map(({ year }) => year));
 </script>
 
 <!-- adapted from https://svelte.dev/playground/e4c7b25da03b40b7a1cbe2b75840a185?version=5.8.1 -->
 <h2 class="text-lg mb-4">Diagram</h2>
-<figure class="max-w-sm">
+<figure class="max-w-sm" aria-live="polite">
+  <div class="sr-only">
+    <p>
+      Showing values for the following years: {listOfCurrentlyShownYears.join(', ')}.
+    </p>
+    <table>
+      <caption>Year and corresponding population table</caption>
+      <thead>
+        <tr>
+          <th scope="col">Year</th>
+          <th scope="col">Population</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each populationDataFiltered as populationDataFilteredEntry}
+          <tr>
+            <td>{populationDataFilteredEntry.year}</td>
+            <td>{numberFormatterCompactNumbers.format(populationDataFilteredEntry.population)}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
   <div class="mb-8">
-    <svg viewBox="0 0 300 300" class="overflow-visible ml-12">
+    <svg viewBox="0 0 300 300" class="overflow-visible ml-12" aria-hidden="true">
       <line x1="0" x2="100%" y1="100%" y2="100%" fill="none" stroke="black" />
       <g transform="translate(0,320)">
         <text x="0" font-size="0.85rem" text-anchor="start">{lastYearAbsolute}</text>

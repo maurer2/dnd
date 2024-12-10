@@ -39,4 +39,4 @@
     <option value={currentGranularity}></option>
   {/each}
 </datalist>
-<output class="basis-6 shrink-0 text-right">{granularity}</output>
+<output class="basis-6 shrink-0 text-right" for="granularity">{granularity}</output>

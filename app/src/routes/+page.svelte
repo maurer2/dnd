@@ -1,6 +1,7 @@
 <script lang="ts">
   import fetchData from '$lib/fetch-data';
   import { createQuery } from '@tanstack/svelte-query';
+  import { LoaderCircle } from 'lucide-svelte';
   import type { ComponentProps } from 'svelte';
 
   import GranularitySlider from '../components/GranularitySlider/GranularitySlider.svelte';
@@ -51,7 +52,7 @@
   <div class="bg-blue-50 p-4 border-b border-blue-100">
     <div class="container mx-auto">
       <h2 id="filter-section-title" class="text-lg">Filters</h2>
-      <ul aria-describedby="filter-section-title" class="sm:grid sm:grid-cols-2 sn:gap-4">
+      <ul aria-describedby="filter-section-title" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <li class="flex gap-4">
           <GranularitySlider bind:granularity />
         </li>
@@ -62,7 +63,9 @@
   <section class="p-4">
     <div class="container mx-auto">
       {#if $populationQuery.isLoading}
-        <p>Querying data</p>
+        <div aria-live="polite" role="status" aria-label="Loading graph data">
+          <LoaderCircle aria-hidden class="motion-safe:animate-spin" />
+        </div>
       {/if}
       {#if $populationQuery.isError}
         <p>Data can't be loaded: {$populationQuery.error.message}</p>
