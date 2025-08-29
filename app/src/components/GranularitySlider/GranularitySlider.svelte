@@ -6,6 +6,7 @@
   const granularityScale = [3, 5, 10];
 
   let { granularity = $bindable() }: GranularitySliderProps = $props();
+  $inspect(granularity);
 </script>
 
 <label for="granularity">Granularity:</label>
@@ -18,15 +19,13 @@
   min={granularityScale[0]}
   max={granularityScale.at(-1)}
   aria-valuenow={granularity}
-  bind:value={granularity}
-  oninput={(event) => {
-    const newValue = parseInt(event.currentTarget.value, 10);
-
+  bind:value={() => granularity,
+  (newGranularity) => {
     switch (true) {
-      case Number.isNaN(newValue) || newValue < 5:
+      case Number.isNaN(newGranularity) || newGranularity < 5:
         granularity = 3;
         return;
-      case newValue < 10:
+      case newGranularity < 10:
         granularity = 5;
         return;
       default:
@@ -34,6 +33,7 @@
     }
   }}
 />
+<!-- Tickmarks -->
 <datalist id="granularity-scale">
   {#each granularityScale as currentGranularity}
     <option value={currentGranularity}></option>
