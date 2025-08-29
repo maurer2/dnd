@@ -1,5 +1,6 @@
 <script lang="ts">
   import fetchData from '$lib/fetch-data';
+  import offlineData from '$lib/offline-data.json';
   import { createQuery } from '@tanstack/svelte-query';
   import { LoaderCircle } from 'lucide-svelte';
   import type { ComponentProps } from 'svelte';
@@ -41,8 +42,14 @@
       }
       return [];
     },
-    queryFn: async () =>
-      await fetchData('https://datausa.io/api/data?drilldowns=Nation&measures=Population'),
+    // queryFn: async () =>
+    // await fetchData('https://datausa.io/api/data?drilldowns=Nation&measures=Population'), // offline
+    // https://datausa.io/about/api/
+    // https://community.postman.com/t/how-to-filter-or-retrieve-from-a-response/71346
+    queryFn: async () => Promise.resolve(offlineData),
+    staleTime: 1000 * 60 * 5, // 5
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   let granularity = $state(3);
