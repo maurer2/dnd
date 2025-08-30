@@ -6,7 +6,6 @@
   const granularityScale = [3, 5, 10];
 
   let { granularity = $bindable() }: GranularitySliderProps = $props();
-  $inspect(granularity);
 </script>
 
 <label for="granularity">Granularity:</label>

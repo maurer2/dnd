@@ -1,5 +1,5 @@
 <script lang="ts">
-  import fetchData from '$lib/fetch-data';
+  // import fetchData from '$lib/fetch-data';
   import offlineData from '$lib/offline-data.json';
   import { createQuery } from '@tanstack/svelte-query';
   import { LoaderCircle } from 'lucide-svelte';
@@ -47,7 +47,7 @@
     // https://datausa.io/about/api/
     // https://community.postman.com/t/how-to-filter-or-retrieve-from-a-response/71346
     queryFn: async () => Promise.resolve(offlineData),
-    staleTime: 1000 * 60 * 5, // 5
+    staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1,
     refetchOnWindowFocus: false,
   });
