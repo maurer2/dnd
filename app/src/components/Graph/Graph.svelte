@@ -1,7 +1,6 @@
 <script lang="ts">
   type GraphProps = {
     granularity: number;
-    // most recent year first
     entries: Array<{
       idYear: number;
       year: string;
@@ -12,17 +11,14 @@
   // 1_000 -> 1K, 1_000_000 -> 1M etc.
   let numberFormatterCompactNumbers = Intl.NumberFormat('en-GB', { notation: 'compact' });
 
-  let { granularity, entries: entriesInDescendingOrder }: GraphProps = $props();
-  let entries = $derived(
-    entriesInDescendingOrder.toSorted((entryA, entryB) => entryA.idYear - entryB.idYear),
-  );
+  let { granularity, entries }: GraphProps = $props();
 
-  let firstYear = $derived(entries[0]?.idYear ?? 0);
-  let lastYear = $derived(entries.at(-1)?.idYear ?? 0);
+  let [firstYear, lastYear] = $derived([entries[0]?.idYear ?? 0, entries.at(-1)?.idYear ?? 0]);
+  let [minPopulation, maxPopulation] = $derived.by(() => {
+    const populationList = entries.map(({ population }) => population);
 
-  let populationList = $derived.by(() => entries.map(({ population }) => population));
-  let minPopulation = $derived(Math.min(...populationList));
-  let maxPopulation = $derived(Math.max(...populationList));
+    return [Math.min(...populationList), Math.max(...populationList)];
+  });
   let populationDataFiltered = $derived.by(() => {
     const filteredList = entries.reduce(
       (total, current) => {

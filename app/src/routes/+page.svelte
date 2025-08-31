@@ -32,13 +32,15 @@
         Array.isArray(response.data)
       ) {
         const dataRaw = response.data as PopulationDataEntryRaw[];
-        const dataPretty = dataRaw.map((entry) => ({
-          idYear: entry['ID Year'],
-          year: entry.Year,
-          population: entry.Population,
-        })) satisfies PopulationDataEntry[];
+        const dataMapped: PopulationDataEntry[] = dataRaw
+          .map((entry) => ({
+            idYear: entry['ID Year'],
+            year: entry.Year,
+            population: entry.Population,
+          }))
+          .sort((entryA, entryB) => entryA.idYear - entryB.idYear);
 
-        return dataPretty;
+        return dataMapped;
       }
       return [];
     },
