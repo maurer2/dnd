@@ -19,8 +19,7 @@
   type GraphProps = ComponentProps<typeof Graph>;
   type PopulationDataEntry = GraphProps['entries'][number];
 
-  // todo: migrate to runes once supported in tanstack query: https://github.com/TanStack/query/discussions/7413
-  const populationQuery = createQuery({
+  const populationQuery = createQuery(() => ({
     queryKey: ['nation-population'],
     select: (response) => {
       // todo: use zod instead
@@ -52,7 +51,7 @@
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1,
     refetchOnWindowFocus: false,
-  });
+  }));
 
   let granularity = $state(3);
 </script>
@@ -71,16 +70,16 @@
 
   <section class="p-4">
     <div class="container mx-auto">
-      {#if $populationQuery.isLoading}
+      {#if populationQuery.isLoading}
         <div aria-live="polite" role="status" aria-label="Loading graph data">
           <LoaderCircle aria-hidden class="motion-safe:animate-spin" />
         </div>
       {/if}
-      {#if $populationQuery.isError}
-        <p>Data can't be loaded: {$populationQuery.error.message}</p>
+      {#if populationQuery.isError}
+        <p>Data can't be loaded: {populationQuery.error.message}</p>
       {/if}
-      {#if $populationQuery.isSuccess}
-        <Graph entries={$populationQuery.data} {granularity} />
+      {#if populationQuery.isSuccess}
+        <Graph entries={populationQuery.data} {granularity} />
       {/if}
     </div>
   </section>
