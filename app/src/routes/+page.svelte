@@ -4,43 +4,51 @@
   import { createQuery } from '@tanstack/svelte-query';
   import { LoaderCircle } from 'lucide-svelte';
   import type { ComponentProps } from 'svelte';
+  import z from 'zod';
 
   import GranularitySlider from '../components/GranularitySlider/GranularitySlider.svelte';
   import Graph from '../components/Graph/Graph.svelte';
 
-  type PopulationDataEntryRaw = {
-    'ID Nation': string;
-    Nation: string;
-    'ID Year': number;
-    Year: string;
-    Population: number;
-    'Slug Nation': string;
-  };
   type GraphProps = ComponentProps<typeof Graph>;
-  type PopulationDataEntry = GraphProps['entries'][number];
+  type PopulationDataEntries = GraphProps['entries'];
+
+  const populationDataEntrySchema = z
+    .looseObject({
+      'ID Nation': z.string(),
+      'ID Year': z.number(),
+      Nation: z.string(),
+      Population: z.number(),
+      'Slug Nation': z.string(),
+      Year: z.string(),
+    })
+    .transform((entry) => ({
+      idYear: entry['ID Year'],
+      year: entry.Year,
+      population: entry.Population,
+    }));
+
+  const populationDataSchema = z
+    .looseObject({
+      data: z.array(populationDataEntrySchema),
+    })
+    .transform(({ data }) => {
+      return data.toSorted((entryA, entryB) => entryA.idYear - entryB.idYear);
+    });
+
+  type PopulationDataEntrySchemaInput = z.input<typeof populationDataEntrySchema>;
+  type PopulationDataEntrySchema = z.output<typeof populationDataEntrySchema>;
+  type PopulationDataSchemaInput = z.input<typeof populationDataSchema>;
+  type PopulationDataSchema = z.output<typeof populationDataSchema>;
 
   const populationQuery = createQuery(() => ({
     queryKey: ['nation-population'],
-    select: (response) => {
-      // todo: use zod instead
-      if (
-        response !== null &&
-        typeof response == 'object' &&
-        !Array.isArray(response) &&
-        'data' in response &&
-        Array.isArray(response.data)
-      ) {
-        const dataRaw = response.data as PopulationDataEntryRaw[];
-        const dataMapped: PopulationDataEntry[] = dataRaw
-          .map((entry) => ({
-            idYear: entry['ID Year'],
-            year: entry.Year,
-            population: entry.Population,
-          }))
-          .sort((entryA, entryB) => entryA.idYear - entryB.idYear);
+    select: (response): PopulationDataEntries => {
+      const populationDataSchemaParsed = populationDataSchema.safeParse(response);
 
-        return dataMapped;
+      if (populationDataSchemaParsed.success) {
+        return populationDataSchemaParsed.data;
       }
+
       return [];
     },
     // queryFn: async () =>
